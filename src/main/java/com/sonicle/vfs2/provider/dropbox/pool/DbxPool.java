@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
  * @author malbinola
  */
 public class DbxPool {
-	
 	private static final DbxPool INSTANCE = new DbxPool();
 	
 	public static DbxPool getInstance() {

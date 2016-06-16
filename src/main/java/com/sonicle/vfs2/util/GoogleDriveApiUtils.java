@@ -57,29 +57,29 @@ import org.slf4j.LoggerFactory;
  *
  * @author malbinola
  */
-public class GDriveApiUtils {
-	
-	static final Logger logger = (Logger) LoggerFactory.getLogger(GDriveApiUtils.class);
-	
+public class GoogleDriveApiUtils {
+	static final Logger logger = (Logger) LoggerFactory.getLogger(GoogleDriveApiUtils.class);
 	public static final HttpTransport TRANSPORT = new NetHttpTransport();
 	public static final JsonFactory JSON_FACTORY = new JacksonFactory();
 	public static final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
+	public static final String SCOPE_USERINFO_EMAIL = "https://www.googleapis.com/auth/userinfo.email";
+	public static final String SCOPE_USERINFO_PROFILE = "https://www.googleapis.com/auth/userinfo.profile";
 	
-	public static GDriveAppInfo createAppInfo(String applicationName, String clientId, String clientSecret) {
-		return new GDriveAppInfo(applicationName, clientId, clientSecret);
+	public static GoogleDriveAppInfo createAppInfo(String applicationName, String clientId, String clientSecret) {
+		return new GoogleDriveAppInfo(applicationName, clientId, clientSecret);
 	}
 	
-	public static String getAuthorizationUrl(GDriveAppInfo appInfo) {
+	public static String getAuthorizationUrl(GoogleDriveAppInfo appInfo) {
 		logger.debug("Building authorization URL");
 		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-			TRANSPORT, JSON_FACTORY, appInfo.clientId, appInfo.clientSecret, Arrays.asList(DriveScopes.DRIVE, "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"))
+			TRANSPORT, JSON_FACTORY, appInfo.clientId, appInfo.clientSecret, Arrays.asList(DriveScopes.DRIVE, SCOPE_USERINFO_EMAIL, SCOPE_USERINFO_PROFILE))
 			.setAccessType("offline")
 			.setApprovalPrompt("auto")
 			.build();
 		return flow.newAuthorizationUrl().setRedirectUri(REDIRECT_URI).build();
 	}
 	
-	public static GoogleCredential exchangeAuthorizationCode(String code, GDriveAppInfo appInfo) throws IOException {
+	public static GoogleCredential exchangeAuthorizationCode(String code, GoogleDriveAppInfo appInfo) throws IOException {
 		logger.debug("Exchanging authentication code {}", code);
 		GoogleAuthorizationCodeTokenRequest request = new GoogleAuthorizationCodeTokenRequest(TRANSPORT, JSON_FACTORY, appInfo.clientId, appInfo.clientSecret, code, REDIRECT_URI);
 		GoogleTokenResponse response = request.execute();
@@ -91,14 +91,14 @@ public class GDriveApiUtils {
 		return credential.setFromTokenResponse(response);
 	}
 	
-	public static GoogleCredential refreshToken(String refreshToken, GDriveAppInfo appInfo) throws IOException {
+	public static GoogleCredential refreshToken(String refreshToken, GoogleDriveAppInfo appInfo) throws IOException {
 		logger.debug("Refreshing accessToken using {}", refreshToken);
 		GoogleRefreshTokenRequest request = new GoogleRefreshTokenRequest(TRANSPORT, JSON_FACTORY, refreshToken, appInfo.clientId, appInfo.clientSecret);
 		GoogleTokenResponse response = request.execute();
 		return new GoogleCredential().setFromTokenResponse(response);
 	}
 	
-	public static String refreshTokenIfNecessary(String accessToken, String refreshToken, GDriveAppInfo appInfo) throws IOException {
+	public static String refreshTokenIfNecessary(String accessToken, String refreshToken, GoogleDriveAppInfo appInfo) throws IOException {
 		// Gets current token info
 		try {
 			Tokeninfo info = getTokenInfo(accessToken, appInfo);
@@ -113,14 +113,14 @@ public class GDriveApiUtils {
 		return cred.getAccessToken();
 	}
 	
-	public static Tokeninfo getTokenInfo(String accessToken, GDriveAppInfo appInfo) throws IOException {
+	public static Tokeninfo getTokenInfo(String accessToken, GoogleDriveAppInfo appInfo) throws IOException {
 		Oauth2 oauth2 = new Oauth2.Builder(TRANSPORT, JSON_FACTORY, null)
 			.setApplicationName(appInfo.applicationName)
 			.build();
 		return oauth2.tokeninfo().setAccessToken(accessToken).execute();
 	}
 	
-	public static Userinfoplus getUserInfo(String accessToken, GDriveAppInfo appInfo) throws IOException {
+	public static Userinfoplus getUserInfo(String accessToken, GoogleDriveAppInfo appInfo) throws IOException {
 		GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
 		Oauth2 oauth = new Oauth2.Builder(TRANSPORT, JSON_FACTORY, credential)
 			.setApplicationName(appInfo.applicationName)
@@ -128,7 +128,7 @@ public class GDriveApiUtils {
 		return oauth.userinfo().get().execute();
 	}
 	
-	public static Drive createClient(String accessToken, GDriveAppInfo appInfo) {
+	public static Drive createClient(String accessToken, GoogleDriveAppInfo appInfo) {
 		GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
 		Drive.Builder builder = new Drive.Builder(TRANSPORT, JSON_FACTORY, credential);
 		builder.setApplicationName(appInfo.applicationName);

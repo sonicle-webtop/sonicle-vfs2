@@ -1,11 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <providers>
 	<provider class-name="com.sonicle.vfs2.provider.dropbox.DbxFileProvider">
 		<scheme name="dropbox"/>
 		<if-available class-name="com.dropbox.core.DbxClient"/>
 	</provider>
 	
-	<provider class-name="com.sonicle.vfs2.provider.gdrive.GDriveFileProvider">
-		<scheme name="gdrive"/>
+	<provider class-name="com.sonicle.vfs2.provider.googledrive.GDriveFileProvider">
+		<scheme name="googledrive"/>
 		<if-available class-name="com.google.api.services.drive.Drive"/>
 	</provider>
 </providers>

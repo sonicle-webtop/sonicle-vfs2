@@ -47,7 +47,6 @@ import org.apache.commons.vfs2.FileSystemOptions;
  * @author malbinola
  */
 public class DbxFileSystemConfigBuilder extends FileSystemConfigBuilder {
-	
 	private static final DbxFileSystemConfigBuilder INSTANCE =  new DbxFileSystemConfigBuilder();
 	
 	public static final String CLIENT_IDENTIFIER = DbxFileSystemConfigBuilder.class.getName() + ".CLIENT_IDENTIFIER";

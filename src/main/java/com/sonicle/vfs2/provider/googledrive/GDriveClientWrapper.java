@@ -32,14 +32,14 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive;
+package com.sonicle.vfs2.provider.googledrive;
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.About;
-import com.sonicle.vfs2.util.GDriveApiUtils;
-import com.sonicle.vfs2.util.GDriveAppInfo;
-import com.sonicle.vfs2.provider.gdrive.pool.GDriveClientInfo;
-import com.sonicle.vfs2.provider.gdrive.pool.GDrivePool;
+import com.sonicle.vfs2.util.GoogleDriveApiUtils;
+import com.sonicle.vfs2.util.GoogleDriveAppInfo;
+import com.sonicle.vfs2.provider.googledrive.pool.GDriveClientInfo;
+import com.sonicle.vfs2.provider.googledrive.pool.GDrivePool;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemOptions;
@@ -50,7 +50,6 @@ import org.apache.commons.vfs2.provider.GenericFileName;
  * @author malbinola
  */
 public class GDriveClientWrapper {
-	
 	private GDriveClientInfo info = null;
 	private Drive gdriveClient = null;
 	
@@ -58,7 +57,7 @@ public class GDriveClientWrapper {
 		
 		try {
 			this.info = info;
-			this.gdriveClient = GDriveApiUtils.createClient(info.accessToken, new GDriveAppInfo(info.applicationName));
+			this.gdriveClient = GoogleDriveApiUtils.createClient(info.accessToken, new GoogleDriveAppInfo(info.applicationName));
 			About about = (About)this.gdriveClient.about().get().execute();
 			about.getRootFolderId();
 		} catch(Exception ex) {

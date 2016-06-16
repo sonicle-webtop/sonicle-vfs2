@@ -48,7 +48,6 @@ import org.apache.commons.vfs2.provider.GenericFileName;
  * @author malbinola
  */
 public class DbxClientWrapper {
-	
 	private DbxClientInfo info = null;
 	private DbxClient dropboxClient = null;
 	

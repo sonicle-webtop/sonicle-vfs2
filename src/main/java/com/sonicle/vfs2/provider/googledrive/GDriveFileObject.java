@@ -32,7 +32,7 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive;
+package com.sonicle.vfs2.provider.googledrive;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
@@ -73,7 +72,6 @@ import org.apache.commons.vfs2.util.RandomAccessMode;
  * @author malbinola
  */
 public class GDriveFileObject extends AbstractFileObject {
-
 	protected final GDriveFileSystem fileSystem;
 	protected String relPath;
 	protected boolean inRefresh = false;

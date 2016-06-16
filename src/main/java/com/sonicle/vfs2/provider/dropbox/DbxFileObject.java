@@ -66,7 +66,6 @@ import org.apache.commons.vfs2.util.RandomAccessMode;
  * @author malbinola
  */
 public class DbxFileObject extends AbstractFileObject {
-	
 	public static final DateFormat DATE_FORMAT_LAST_MODIFIED = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss zzz");
 	protected final DbxFileSystem fileSystem;
 	protected String relPath;

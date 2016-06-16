@@ -32,48 +32,39 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive;
+package com.sonicle.vfs2.provider.googledrive.pool;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.apache.commons.vfs2.Capability;
-import org.apache.commons.vfs2.FileName;
-import org.apache.commons.vfs2.FileSystem;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.provider.AbstractOriginatingFileProvider;
-import org.apache.commons.vfs2.provider.GenericFileName;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  *
  * @author malbinola
  */
-public class GDriveFileProvider  extends AbstractOriginatingFileProvider {
+public class GDriveClientInfo {
 	
-	public final static Collection<Capability> capabilities = Collections.unmodifiableCollection(Arrays.asList(
-		Capability.CREATE, Capability.DELETE, 
-		Capability.GET_LAST_MODIFIED, Capability.GET_TYPE, 
-		Capability.LIST_CHILDREN, 
-		Capability.RANDOM_ACCESS_READ, Capability.READ_CONTENT, 
-		Capability.RENAME, Capability.SET_LAST_MODIFIED_FILE, Capability.SET_LAST_MODIFIED_FOLDER, Capability.URI, Capability.WRITE_CONTENT
-	));
-	
-	public GDriveFileProvider() {
-		super();
-		setFileNameParser(GDriveFileNameParser.getInstance());
+	public String applicationName = null;
+	public String accessToken = null;
+
+	public GDriveClientInfo(String applicationName, String accessToken) {
+		this.applicationName = applicationName;
+		this.accessToken = accessToken;
 	}
 	
 	@Override
-	protected FileSystem doCreateFileSystem(FileName fn, FileSystemOptions fso) throws FileSystemException {
-		GenericFileName rootName = (GenericFileName)fn;
-		GDriveClientWrapper client = GDriveClientWrapper.getClientWrapper(rootName, fso);
-		GDriveClientWrapper.releaseClientWrapper(client);
-		return new GDriveFileSystem(rootName, fso);
+	public boolean equals(Object obj) {
+		return EqualsBuilder.reflectionEquals(this, obj);
 	}
 	
 	@Override
-	public Collection getCapabilities() {
-		return capabilities;
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
+	}
+	
+	@Override
+	public int hashCode() {
+		return HashCodeBuilder.reflectionHashCode(this);
 	}
 }

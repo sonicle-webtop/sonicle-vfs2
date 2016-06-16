@@ -32,26 +32,26 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive;
+package com.sonicle.vfs2.provider.googledrive.pool;
 
-import org.apache.commons.vfs2.provider.FileNameParser;
-import org.apache.commons.vfs2.provider.URLFileNameParser;
+import com.sonicle.vfs2.provider.googledrive.GDriveClientWrapper;
+import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 
 /**
  *
  * @author malbinola
  */
-public class GDriveFileNameParser extends URLFileNameParser {
-	
-	private static final GDriveFileNameParser INSTANCE = new GDriveFileNameParser();
-	
-	public static FileNameParser getInstance() {
-		return INSTANCE;
-	}
-	
-	private static final int DEFAULT_PORT = 80;
+public class GDriveClientWrapperFactory extends BaseKeyedPooledObjectFactory<GDriveClientInfo, GDriveClientWrapper> {
 
-	private GDriveFileNameParser() {
-		super(DEFAULT_PORT);
+	@Override
+	public GDriveClientWrapper create(GDriveClientInfo k) throws Exception {
+		return GDriveClientWrapper.createClientWrapper(k);
+	}
+
+	@Override
+	public PooledObject<GDriveClientWrapper> wrap(GDriveClientWrapper v) {
+		return new DefaultPooledObject(v);
 	}
 }

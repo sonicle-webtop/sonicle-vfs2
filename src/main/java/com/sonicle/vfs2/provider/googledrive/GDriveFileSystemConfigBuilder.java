@@ -32,32 +32,57 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive.pool;
+package com.sonicle.vfs2.provider.googledrive;
 
-import java.util.concurrent.TimeUnit;
+import org.apache.commons.vfs2.FileSystem;
+import org.apache.commons.vfs2.FileSystemConfigBuilder;
+import org.apache.commons.vfs2.FileSystemOptions;
 
 /**
  *
  * @author malbinola
  */
-public class GDrivePool {
+public class GDriveFileSystemConfigBuilder extends FileSystemConfigBuilder {
+	private static final GDriveFileSystemConfigBuilder INSTANCE =  new GDriveFileSystemConfigBuilder();
 	
-	private static final GDrivePool INSTANCE = new GDrivePool();
+	public static final String APPLICATION_NAME = GDriveFileSystemConfigBuilder.class.getName() + ".APPLICATION_NAME";
+	public static final String ACCESS_TOKEN = GDriveFileSystemConfigBuilder.class.getName() + ".ACCESS_TOKEN";
+	public static final String USE_TRASH = GDriveFileSystemConfigBuilder.class.getName() + ".USE_TRASH";
 	
-	public static GDrivePool getInstance() {
+	private GDriveFileSystemConfigBuilder() {
+		super("googledrive.");
+	}
+	
+	public static GDriveFileSystemConfigBuilder getInstance() {
 		return INSTANCE;
 	}
-	
-	private final GDriveClientWrapperObjectPool pool;
-	
-	private GDrivePool() {
-		pool = new GDriveClientWrapperObjectPool(new GDriveClientWrapperFactory());
-		pool.setMaxTotalPerKey(5);
-		pool.setTimeBetweenEvictionRunsMillis(TimeUnit.MINUTES.toMillis(5));
-		pool.setMinEvictableIdleTimeMillis(TimeUnit.MINUTES.toMillis(10));
+
+	@Override
+	protected Class<? extends FileSystem> getConfigClass() {
+		return GDriveFileSystem.class;
 	}
 	
-	public GDriveClientWrapperObjectPool getPool() {
-		return pool;
+	public String getApplicationName(FileSystemOptions fso) {
+		return this.getString(fso, APPLICATION_NAME);
+	}
+	
+	public void setApplicationName(FileSystemOptions fso, String value) {
+		this.setParam(fso, APPLICATION_NAME, value);
+	}
+	
+	public String getAccessToken(FileSystemOptions fso) {
+		return this.getString(fso, ACCESS_TOKEN);
+	}
+	
+	public void setAccessToken(FileSystemOptions fso, String value) {
+		this.setParam(fso, ACCESS_TOKEN, value);
+	}
+	
+	public Boolean getUseTrash(FileSystemOptions fso) {
+		return this.getBoolean(fso, USE_TRASH, true);
+	}
+	
+	public void setUseTrash(FileSystemOptions fso, boolean value) {
+		this.setParam(fso, USE_TRASH, value);
 	}
 }

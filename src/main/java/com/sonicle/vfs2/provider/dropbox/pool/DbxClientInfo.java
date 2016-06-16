@@ -44,7 +44,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author malbinola
  */
 public class DbxClientInfo {
-	
 	public String clientIdentifier = null;
 	public String accessToken = null;
 

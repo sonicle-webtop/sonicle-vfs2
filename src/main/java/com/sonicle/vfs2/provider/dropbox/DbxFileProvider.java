@@ -53,7 +53,6 @@ import org.slf4j.LoggerFactory;
  * @author malbinola
  */
 public class DbxFileProvider extends AbstractOriginatingFileProvider {
-	
 	static final Logger logger = (Logger) LoggerFactory.getLogger(DbxFileProvider.class);
 	public final static Collection<Capability> capabilities = Collections.unmodifiableCollection(Arrays.asList(
 		Capability.CREATE, Capability.DELETE, 

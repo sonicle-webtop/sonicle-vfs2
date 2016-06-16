@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
  * @author malbinola
  */
 public class DropboxApiUtils {
-	
 	static final Logger logger = (Logger) LoggerFactory.getLogger(DropboxApiUtils.class);
 	
 	public static DbxAppInfo createAppInfo(String appKey, String appSecret) {

@@ -32,39 +32,24 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive.pool;
+package com.sonicle.vfs2.provider.googledrive.pool;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import com.sonicle.vfs2.provider.googledrive.GDriveClientWrapper;
+import org.apache.commons.pool2.KeyedPooledObjectFactory;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 
 /**
  *
  * @author malbinola
  */
-public class GDriveClientInfo {
+public class GDriveClientWrapperObjectPool extends GenericKeyedObjectPool<GDriveClientInfo, GDriveClientWrapper> {
 	
-	public String applicationName = null;
-	public String accessToken = null;
-
-	public GDriveClientInfo(String applicationName, String accessToken) {
-		this.applicationName = applicationName;
-		this.accessToken = accessToken;
+	public GDriveClientWrapperObjectPool(KeyedPooledObjectFactory<GDriveClientInfo, GDriveClientWrapper> factory) {
+		super(factory);
 	}
 	
-	@Override
-	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
-	}
-	
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.DEFAULT_STYLE);
-	}
-	
-	@Override
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
+	public GDriveClientWrapperObjectPool(KeyedPooledObjectFactory<GDriveClientInfo, GDriveClientWrapper> factory, GenericKeyedObjectPoolConfig config) {
+		super(factory, config);
 	}
 }

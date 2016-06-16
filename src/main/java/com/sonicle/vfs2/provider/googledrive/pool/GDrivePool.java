@@ -32,43 +32,32 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive;
+package com.sonicle.vfs2.provider.googledrive.pool;
 
-import java.io.IOException;
-import java.util.Collection;
-import org.apache.commons.vfs2.Capability;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystem;
-import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.provider.AbstractFileName;
-import org.apache.commons.vfs2.provider.AbstractFileSystem;
-import org.apache.commons.vfs2.provider.GenericFileName;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
  * @author malbinola
  */
-public class GDriveFileSystem extends AbstractFileSystem implements FileSystem {
+public class GDrivePool {
 	
-	protected GDriveFileSystem(GenericFileName rootName, FileSystemOptions fso) {
-		super(rootName, null, fso);
-	}
+	private static final GDrivePool INSTANCE = new GDrivePool();
 	
-	public GDriveClientWrapper getClientWrapper() throws IOException {
-		return GDriveClientWrapper.getClientWrapper((GenericFileName)getRoot().getName(), getFileSystemOptions());
+	public static GDrivePool getInstance() {
+		return INSTANCE;
 	}
 	
-	public void putClientWrapper(GDriveClientWrapper client) {
-		GDriveClientWrapper.releaseClientWrapper(client);
+	private final GDriveClientWrapperObjectPool pool;
+	
+	private GDrivePool() {
+		pool = new GDriveClientWrapperObjectPool(new GDriveClientWrapperFactory());
+		pool.setMaxTotalPerKey(5);
+		pool.setTimeBetweenEvictionRunsMillis(TimeUnit.MINUTES.toMillis(5));
+		pool.setMinEvictableIdleTimeMillis(TimeUnit.MINUTES.toMillis(10));
 	}
-
-	@Override
-	protected FileObject createFile(AbstractFileName afn) throws Exception {
-		return new GDriveFileObject(afn, this);
-	}
-
-	@Override
-	protected void addCapabilities(Collection<Capability> caps) {
-		caps.addAll(GDriveFileProvider.capabilities);
+	
+	public GDriveClientWrapperObjectPool getPool() {
+		return pool;
 	}
 }

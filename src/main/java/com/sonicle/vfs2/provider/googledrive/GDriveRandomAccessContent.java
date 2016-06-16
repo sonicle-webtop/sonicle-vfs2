@@ -32,7 +32,7 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive;
+package com.sonicle.vfs2.provider.googledrive;
 
 import java.io.DataInputStream;
 import java.io.FilterInputStream;
@@ -47,7 +47,6 @@ import org.apache.commons.vfs2.util.RandomAccessMode;
  * @author malbinola
  */
 public class GDriveRandomAccessContent extends AbstractRandomAccessStreamContent {
-	
 	protected long filePointer = 0L;
 	protected GDriveFileObject fileObject = null;
 	protected DataInputStream dataInputStream;

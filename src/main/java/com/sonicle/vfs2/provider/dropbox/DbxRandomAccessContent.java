@@ -47,7 +47,6 @@ import org.apache.commons.vfs2.util.RandomAccessMode;
  * @author malbinola
  */
 public class DbxRandomAccessContent extends AbstractRandomAccessStreamContent {
-	
 	protected long filePointer = 0L;
 	protected DbxFileObject fileObject = null;
 	protected DataInputStream dataInputStream;

@@ -32,25 +32,43 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.util;
+package com.sonicle.vfs2.provider.googledrive;
+
+import java.io.IOException;
+import java.util.Collection;
+import org.apache.commons.vfs2.Capability;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystem;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.provider.AbstractFileName;
+import org.apache.commons.vfs2.provider.AbstractFileSystem;
+import org.apache.commons.vfs2.provider.GenericFileName;
 
 /**
  *
  * @author malbinola
  */
-public class GDriveAppInfo {
+public class GDriveFileSystem extends AbstractFileSystem implements FileSystem {
 	
-	public String applicationName = null;
-	public String clientId = null;
-	public String clientSecret = null;
-	
-	public GDriveAppInfo(String applicationName) {
-		this.applicationName = applicationName;
+	protected GDriveFileSystem(GenericFileName rootName, FileSystemOptions fso) {
+		super(rootName, null, fso);
 	}
 	
-	public GDriveAppInfo(String applicationName, String clientId, String clientSecret) {
-		this.applicationName = applicationName;
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
+	public GDriveClientWrapper getClientWrapper() throws IOException {
+		return GDriveClientWrapper.getClientWrapper((GenericFileName)getRoot().getName(), getFileSystemOptions());
+	}
+	
+	public void putClientWrapper(GDriveClientWrapper client) {
+		GDriveClientWrapper.releaseClientWrapper(client);
+	}
+
+	@Override
+	protected FileObject createFile(AbstractFileName afn) throws Exception {
+		return new GDriveFileObject(afn, this);
+	}
+
+	@Override
+	protected void addCapabilities(Collection<Capability> caps) {
+		caps.addAll(GDriveFileProvider.capabilities);
 	}
 }

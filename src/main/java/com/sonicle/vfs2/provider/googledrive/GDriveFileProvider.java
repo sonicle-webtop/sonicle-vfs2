@@ -32,26 +32,48 @@
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
 
-package com.sonicle.vfs2.provider.gdrive.pool;
+package com.sonicle.vfs2.provider.googledrive;
 
-import com.sonicle.vfs2.provider.gdrive.GDriveClientWrapper;
-import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import org.apache.commons.vfs2.Capability;
+import org.apache.commons.vfs2.FileName;
+import org.apache.commons.vfs2.FileSystem;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.provider.AbstractOriginatingFileProvider;
+import org.apache.commons.vfs2.provider.GenericFileName;
 
 /**
  *
  * @author malbinola
  */
-public class GDriveClientWrapperFactory extends BaseKeyedPooledObjectFactory<GDriveClientInfo, GDriveClientWrapper> {
-
-	@Override
-	public GDriveClientWrapper create(GDriveClientInfo k) throws Exception {
-		return GDriveClientWrapper.createClientWrapper(k);
+public class GDriveFileProvider  extends AbstractOriginatingFileProvider {
+	
+	public final static Collection<Capability> capabilities = Collections.unmodifiableCollection(Arrays.asList(
+		Capability.CREATE, Capability.DELETE, 
+		Capability.GET_LAST_MODIFIED, Capability.GET_TYPE, 
+		Capability.LIST_CHILDREN, 
+		Capability.RANDOM_ACCESS_READ, Capability.READ_CONTENT, 
+		Capability.RENAME, Capability.SET_LAST_MODIFIED_FILE, Capability.SET_LAST_MODIFIED_FOLDER, Capability.URI, Capability.WRITE_CONTENT
+	));
+	
+	public GDriveFileProvider() {
+		super();
+		setFileNameParser(GDriveFileNameParser.getInstance());
 	}
-
+	
 	@Override
-	public PooledObject<GDriveClientWrapper> wrap(GDriveClientWrapper v) {
-		return new DefaultPooledObject(v);
+	protected FileSystem doCreateFileSystem(FileName fn, FileSystemOptions fso) throws FileSystemException {
+		GenericFileName rootName = (GenericFileName)fn;
+		GDriveClientWrapper client = GDriveClientWrapper.getClientWrapper(rootName, fso);
+		GDriveClientWrapper.releaseClientWrapper(client);
+		return new GDriveFileSystem(rootName, fso);
+	}
+	
+	@Override
+	public Collection getCapabilities() {
+		return capabilities;
 	}
 }

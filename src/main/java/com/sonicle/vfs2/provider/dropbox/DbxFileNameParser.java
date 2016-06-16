@@ -43,7 +43,6 @@ import org.apache.commons.vfs2.provider.URLFileNameParser;
  * @author malbinola
  */
 public class DbxFileNameParser extends URLFileNameParser {
-	
 	private static final DbxFileNameParser INSTANCE = new DbxFileNameParser();
 	
 	public static FileNameParser getInstance() {
