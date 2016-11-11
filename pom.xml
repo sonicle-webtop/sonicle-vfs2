@@ -7,6 +7,7 @@
 	<version>1.0</version>
 	<packaging>jar</packaging>
 	<name>sonicle-vfs2-providers</name>
+	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.6</maven.compiler.source>
@@ -71,12 +72,12 @@
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-drive</artifactId>
 			<version>v2-rev143-1.19.0</version>
-		 <exclusions>
-		  <exclusion>
-		   <artifactId>guava-jdk5</artifactId>
-		   <groupId>com.google.guava</groupId>
-		  </exclusion>
-		 </exclusions>
+			<exclusions>
+				<exclusion>
+					<artifactId>guava-jdk5</artifactId>
+					<groupId>com.google.guava</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.google.apis</groupId>
