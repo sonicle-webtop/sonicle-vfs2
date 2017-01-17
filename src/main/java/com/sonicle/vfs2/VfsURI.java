@@ -33,6 +33,8 @@
 package com.sonicle.vfs2;
 
 import com.sonicle.commons.PathUtils;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import org.apache.commons.lang3.StringUtils;
 
@@ -84,22 +86,19 @@ public class VfsURI {
 			return (T)this;
 		}
 		
-		public String build() {
-			String sscheme = this.scheme;
-			String shost = StringUtils.defaultString(this.host);
-			String sport = (this.port == null) ? "" : String.valueOf(this.port);
-			if(!StringUtils.isEmpty(sport)) sport = ":"+sport;
+		public String build() throws URISyntaxException {
+			String shost = StringUtils.defaultIfBlank(this.host, null);
+			int iport = (this.port == null) ? -1 : this.port;
 			String suserInfo = "";
-			if(!StringUtils.isBlank(username)) {
+			if (!StringUtils.isBlank(username)) {
 				suserInfo += username;
-				if(!StringUtils.isBlank(password)) {
+				if (!StringUtils.isBlank(password)) {
 					suserInfo += ":";
 					suserInfo += password;
 				}
 			}
-			if(!StringUtils.isEmpty(suserInfo)) suserInfo = suserInfo+"@";
 			String spath = PathUtils.ensureTrailingSeparator(this.path, true);
-			return MessageFormat.format("{0}://{1}{2}{3}{4}", sscheme, suserInfo, shost, sport, spath);
+			return new URI(this.scheme, suserInfo, shost, iport, spath, null, null).toString();
 		}
 	}
 }
