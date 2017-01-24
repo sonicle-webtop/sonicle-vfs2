@@ -86,7 +86,7 @@ public class VfsURI {
 			return (T)this;
 		}
 		
-		public String build() throws URISyntaxException {
+		public URI build() throws URISyntaxException {
 			String shost = StringUtils.defaultIfBlank(this.host, null);
 			int iport = (this.port == null) ? -1 : this.port;
 			String suserInfo = "";
@@ -98,7 +98,7 @@ public class VfsURI {
 				}
 			}
 			String spath = PathUtils.ensureTrailingSeparator(this.path, true);
-			return new URI(this.scheme, suserInfo, shost, iport, spath, null, null).toString();
+			return new URI(this.scheme, suserInfo, shost, iport, spath, null, null);
 		}
 	}
 }

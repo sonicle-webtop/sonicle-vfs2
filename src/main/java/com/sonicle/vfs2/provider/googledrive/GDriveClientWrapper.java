@@ -80,7 +80,7 @@ public class GDriveClientWrapper {
 		
 		try {
 			String token = rootName.getPassword();
-			if(StringUtils.isEmpty(token)) token = builder.getAccessToken(fso);
+			if(StringUtils.isBlank(token)) token = builder.getAccessToken(fso);
 			GDriveClientInfo k = new GDriveClientInfo(builder.getApplicationName(fso), token);
 			return GDrivePool.getInstance().getPool().borrowObject(k);
 		} catch(Exception ex) {

@@ -77,7 +77,7 @@ public class DbxClientWrapper {
 		
 		try {
 			String token = rootName.getPassword();
-			if(StringUtils.isEmpty(token)) token = builder.getAccessToken(fso);
+			if(StringUtils.isBlank(token)) token = builder.getAccessToken(fso);
 			DbxClientInfo k = new DbxClientInfo(builder.getClientIdentifier(fso), token);
 			return DbxPool.getInstance().getPool().borrowObject(k);
 		} catch(Exception ex) {
