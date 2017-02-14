@@ -35,7 +35,6 @@ package com.sonicle.vfs2;
 import com.sonicle.commons.PathUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.MessageFormat;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -45,6 +44,14 @@ import org.apache.commons.lang3.StringUtils;
 public class VfsURI {
 	
 	private VfsURI() {}
+	
+	public static URI parseQuietly(String uri) {
+		try {
+			return new URI(uri);
+		} catch(URISyntaxException ex) {
+			return null;
+		}
+	}
 	
 	public static class Builder<T extends Builder> {
 		private String scheme = null;
@@ -88,17 +95,22 @@ public class VfsURI {
 		
 		public URI build() throws URISyntaxException {
 			String shost = StringUtils.defaultIfBlank(this.host, null);
-			int iport = (this.port == null) ? -1 : this.port;
-			String suserInfo = "";
-			if (!StringUtils.isBlank(username)) {
-				suserInfo += username;
-				if (!StringUtils.isBlank(password)) {
-					suserInfo += ":";
-					suserInfo += password;
-				}
-			}
 			String spath = PathUtils.ensureTrailingSeparator(this.path, true);
-			return new URI(this.scheme, suserInfo, shost, iport, spath, null, null);
+			
+			if (shost == null) {
+				return new URI(this.scheme, "", spath, null, null);
+			} else {
+				int iport = (this.port == null) ? -1 : this.port;
+				String suserInfo = "";
+				if (!StringUtils.isBlank(username)) {
+					suserInfo += username;
+					if (!StringUtils.isBlank(password)) {
+						suserInfo += ":";
+						suserInfo += password;
+					}
+				}
+				return new URI(this.scheme, suserInfo, shost, iport, spath, null, null);
+			}
 		}
 	}
 }
