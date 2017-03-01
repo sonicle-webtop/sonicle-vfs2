@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<groupId>com.sonicle.commons</groupId>
-	<artifactId>sonicle-commons-vfs2</artifactId>
+	<artifactId>sonicle-vfs2</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
-	<name>sonicle-commons-vfs2</name>
+	<name>sonicle-vfs2</name>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
