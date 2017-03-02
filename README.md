@@ -1,4 +1,4 @@
-# Sonicle VFS2 Library
+# VFS2 Library
 
 [![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.txt)
 
@@ -12,4 +12,4 @@ Additionally, it contains useful methods for dealing with VFS2 aspects: FileObje
 
 ## License
 
-Sonicle VFS2 Library is Open Source software released under the [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.txt)
+VFS2 Library is Open Source software released under the [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.txt)
