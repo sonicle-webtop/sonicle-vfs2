@@ -8,7 +8,7 @@ This library mainly includes a VFS2 provider implementation for different online
 - [Dropbox](https://www.dropbox.com/it/)
 - [Google Drive](https://www.google.com/drive/)
 
-Additionally, it contains useful methods for dealing with VFS2 aspects: FileObject entities, FileObject selectors/comparators and URI manipulation.
+Additionally, it contains useful methods for dealing with VFS2: FileObject entities, FileObject selectors/comparators and URI manipulation.
 
 ## License
 
