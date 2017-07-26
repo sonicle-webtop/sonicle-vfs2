@@ -9,4 +9,9 @@
 		<scheme name="googledrive"/>
 		<if-available class-name="com.google.api.services.drive.Drive"/>
 	</provider>
+	
+	<provider
+		class-name="com.sonicle.vfs2.provider.webdav.WebdavFileProvider">
+		<scheme name="webdav" />
+	</provider>	
 </providers>
