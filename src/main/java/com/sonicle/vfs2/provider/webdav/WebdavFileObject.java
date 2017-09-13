@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import javax.activation.MimeType;
-import javax.activation.MimetypesFileTypeMap;
-
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileType;
@@ -19,14 +15,9 @@ import org.apache.commons.vfs2.provider.AbstractFileName;
 import org.apache.commons.vfs2.provider.AbstractFileObject;
 import org.apache.commons.vfs2.provider.AbstractFileSystem;
 import org.apache.commons.vfs2.util.MonitorOutputStream;
-
 import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
-import com.sonicle.commons.URIUtils;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import org.apache.commons.lang3.StringUtils;
 
 public class WebdavFileObject extends AbstractFileObject {
 	/**
