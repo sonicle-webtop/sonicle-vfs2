@@ -42,7 +42,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author malbinola
  */
 public class GDriveClientInfo {
-	
 	public String applicationName = null;
 	public String accessToken = null;
 

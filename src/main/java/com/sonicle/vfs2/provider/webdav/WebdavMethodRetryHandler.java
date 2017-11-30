@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Sonicle S.r.l.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -30,51 +30,31 @@
  * reasonably feasible for technical reasons, the Appropriate Legal Notices must
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
-package com.sonicle.vfs2.provider.dropbox;
+package com.sonicle.vfs2.provider.webdav;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.apache.commons.vfs2.Capability;
-import org.apache.commons.vfs2.FileName;
-import org.apache.commons.vfs2.FileSystem;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.provider.AbstractOriginatingFileProvider;
-import org.apache.commons.vfs2.provider.GenericFileName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.IOException;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
 
 /**
+ * A retry handler which will retry a failed webdav method one time.
+ * <p>
+ * Now that webdavlib didnt support adding a MethodRetryHandler only a few operations are restartable yet.
  *
- * @author malbinola
+ * @since 2.0
  */
-public class DbxFileProvider extends AbstractOriginatingFileProvider {
-	static final Logger logger = (Logger) LoggerFactory.getLogger(DbxFileProvider.class);
-	public static final Collection<Capability> CAPABILITIES = Collections.unmodifiableCollection(Arrays.asList(
-		Capability.CREATE, Capability.DELETE, 
-		Capability.GET_LAST_MODIFIED, Capability.GET_TYPE, 
-		Capability.LIST_CHILDREN, 
-		Capability.RANDOM_ACCESS_READ, Capability.READ_CONTENT, 
-		Capability.RENAME, Capability.URI, Capability.WRITE_CONTENT
-	));
-	
-	public DbxFileProvider() {
-		super();
-		setFileNameParser(DbxFileNameParser.getInstance());
-	}
+public final class WebdavMethodRetryHandler implements HttpMethodRetryHandler {
+    private static final WebdavMethodRetryHandler INSTANCE = new WebdavMethodRetryHandler();
 
-	@Override
-	protected FileSystem doCreateFileSystem(FileName name, FileSystemOptions fileSystemOptions) throws FileSystemException {
-		final GenericFileName rootName = (GenericFileName)name;
-		DbxClientWrapper client = DbxClientWrapper.getClientWrapper(rootName, fileSystemOptions);
-		DbxClientWrapper.releaseClientWrapper(client);
-		return new DbxFileSystem(rootName, fileSystemOptions);
-	}
-	
-	@Override
-	public Collection getCapabilities() {
-		return CAPABILITIES;
-	}
+    private WebdavMethodRetryHandler() {
+    }
+
+    public static WebdavMethodRetryHandler getInstance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public boolean retryMethod(final HttpMethod method, final IOException exception, final int executionCount) {
+        return executionCount < 2;
+    }
 }

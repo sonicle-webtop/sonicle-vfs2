@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Sonicle S.r.l.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -30,51 +30,47 @@
  * reasonably feasible for technical reasons, the Appropriate Legal Notices must
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
-package com.sonicle.vfs2.provider.dropbox;
+package com.sonicle.vfs2.provider.webdav;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.apache.commons.vfs2.Capability;
-import org.apache.commons.vfs2.FileName;
-import org.apache.commons.vfs2.FileSystem;
+import org.apache.commons.vfs2.FileContent;
+import org.apache.commons.vfs2.FileContentInfo;
+import org.apache.commons.vfs2.FileContentInfoFactory;
 import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.provider.AbstractOriginatingFileProvider;
-import org.apache.commons.vfs2.provider.GenericFileName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.apache.commons.vfs2.impl.DefaultFileContentInfo;
+import org.apache.commons.vfs2.provider.URLFileName;
+import org.apache.commons.vfs2.util.FileObjectUtils;
+import org.apache.jackrabbit.webdav.property.DavProperty;
+import org.apache.jackrabbit.webdav.property.DavPropertyName;
+import org.apache.jackrabbit.webdav.property.DavPropertyNameSet;
+import org.apache.jackrabbit.webdav.property.DavPropertySet;
 
 /**
+ * Determines the content information for files accessed via WebDAV.
  *
- * @author malbinola
+ * @since 2.0
  */
-public class DbxFileProvider extends AbstractOriginatingFileProvider {
-	static final Logger logger = (Logger) LoggerFactory.getLogger(DbxFileProvider.class);
-	public static final Collection<Capability> CAPABILITIES = Collections.unmodifiableCollection(Arrays.asList(
-		Capability.CREATE, Capability.DELETE, 
-		Capability.GET_LAST_MODIFIED, Capability.GET_TYPE, 
-		Capability.LIST_CHILDREN, 
-		Capability.RANDOM_ACCESS_READ, Capability.READ_CONTENT, 
-		Capability.RENAME, Capability.URI, Capability.WRITE_CONTENT
-	));
-	
-	public DbxFileProvider() {
-		super();
-		setFileNameParser(DbxFileNameParser.getInstance());
-	}
+public class WebdavFileContentInfoFactory implements FileContentInfoFactory {
 
 	@Override
-	protected FileSystem doCreateFileSystem(FileName name, FileSystemOptions fileSystemOptions) throws FileSystemException {
-		final GenericFileName rootName = (GenericFileName)name;
-		DbxClientWrapper client = DbxClientWrapper.getClientWrapper(rootName, fileSystemOptions);
-		DbxClientWrapper.releaseClientWrapper(client);
-		return new DbxFileSystem(rootName, fileSystemOptions);
-	}
-	
-	@Override
-	public Collection getCapabilities() {
-		return CAPABILITIES;
+	public FileContentInfo create(final FileContent fileContent) throws FileSystemException {
+		final WebdavFileObject file = (WebdavFileObject) FileObjectUtils.getAbstractFileObject(fileContent.getFile());
+
+		String contentType = null;
+		String contentEncoding = null;
+
+		final DavPropertyNameSet nameSet = new DavPropertyNameSet();
+		nameSet.add(DavPropertyName.GETCONTENTTYPE);
+		final DavPropertySet propertySet = file.getProperties((URLFileName) file.getName(), nameSet, true);
+
+		DavProperty property = propertySet.get(DavPropertyName.GETCONTENTTYPE);
+		if (property != null) {
+			contentType = (String) property.getValue();
+		}
+		property = propertySet.get(WebdavFileObject.RESPONSE_CHARSET);
+		if (property != null) {
+			contentEncoding = (String) property.getValue();
+		}
+
+		return new DefaultFileContentInfo(contentType, contentEncoding);
 	}
 }

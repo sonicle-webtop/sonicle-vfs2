@@ -4,14 +4,18 @@
 		<scheme name="dropbox"/>
 		<if-available class-name="com.dropbox.core.DbxClient"/>
 	</provider>
-	
 	<provider class-name="com.sonicle.vfs2.provider.googledrive.GDriveFileProvider">
 		<scheme name="googledrive"/>
 		<if-available class-name="com.google.api.services.drive.Drive"/>
 	</provider>
-	
-	<provider
-		class-name="com.sonicle.vfs2.provider.webdav.WebdavFileProvider">
-		<scheme name="webdav" />
-	</provider>	
+	<provider class-name="com.sonicle.vfs2.provider.webdav.WebdavFileProvider">
+		<scheme name="webdav"/>
+		<if-available class-name="org.apache.commons.httpclient.HttpClient"/>
+		<if-available class-name="org.apache.jackrabbit.webdav.client.methods.DavMethod"/>
+	</provider>
+	<provider class-name="com.sonicle.vfs2.provider.webdavs.WebdavsFileProvider">
+		<scheme name="webdavs"/>
+		<if-available class-name="org.apache.commons.httpclient.HttpClient"/>
+		<if-available class-name="org.apache.jackrabbit.webdav.client.methods.DavMethod"/>
+	</provider>
 </providers>

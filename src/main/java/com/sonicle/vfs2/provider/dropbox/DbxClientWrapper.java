@@ -46,15 +46,15 @@ import org.apache.commons.vfs2.provider.GenericFileName;
  * @author malbinola
  */
 public class DbxClientWrapper {
-	private DbxClientInfo info = null;
-	private DbxClient dropboxClient = null;
+	private final DbxClientInfo info;
+	private final DbxClient client;
 	
 	private DbxClientWrapper(DbxClientInfo info) throws FileSystemException {
 		
 		try {
 			this.info = info;
-			this.dropboxClient = DropboxApiUtils.createClient(info.accessToken, info.clientIdentifier, "it_IT");
-			this.dropboxClient.getMetadata("/");
+			this.client = DropboxApiUtils.createClient(info.accessToken, info.clientIdentifier, "it_IT");
+			this.client.getMetadata("/");
 		} catch(Exception ex) {
 			throw new FileSystemException(ex);
 		}
@@ -65,7 +65,7 @@ public class DbxClientWrapper {
 	}
 	
 	public DbxClient getClient() {
-		return this.dropboxClient;
+		return this.client;
 	}
 	
 	public static DbxClientWrapper createClientWrapper(DbxClientInfo info) throws FileSystemException {

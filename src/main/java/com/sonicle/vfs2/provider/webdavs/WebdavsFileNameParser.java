@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Sonicle S.r.l.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -30,51 +30,24 @@
  * reasonably feasible for technical reasons, the Appropriate Legal Notices must
  * display the words "Copyright (C) 2014 Sonicle S.r.l.".
  */
-package com.sonicle.vfs2.provider.dropbox;
+package com.sonicle.vfs2.provider.webdavs;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.apache.commons.vfs2.Capability;
-import org.apache.commons.vfs2.FileName;
-import org.apache.commons.vfs2.FileSystem;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.provider.AbstractOriginatingFileProvider;
-import org.apache.commons.vfs2.provider.GenericFileName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.apache.commons.vfs2.provider.FileNameParser;
+import org.apache.commons.vfs2.provider.https.HttpsFileNameParser;
 
 /**
  *
  * @author malbinola
  */
-public class DbxFileProvider extends AbstractOriginatingFileProvider {
-	static final Logger logger = (Logger) LoggerFactory.getLogger(DbxFileProvider.class);
-	public static final Collection<Capability> CAPABILITIES = Collections.unmodifiableCollection(Arrays.asList(
-		Capability.CREATE, Capability.DELETE, 
-		Capability.GET_LAST_MODIFIED, Capability.GET_TYPE, 
-		Capability.LIST_CHILDREN, 
-		Capability.RANDOM_ACCESS_READ, Capability.READ_CONTENT, 
-		Capability.RENAME, Capability.URI, Capability.WRITE_CONTENT
-	));
-	
-	public DbxFileProvider() {
+public class WebdavsFileNameParser extends HttpsFileNameParser {
+
+	private static final WebdavsFileNameParser INSTANCE = new WebdavsFileNameParser();
+
+	public WebdavsFileNameParser() {
 		super();
-		setFileNameParser(DbxFileNameParser.getInstance());
 	}
 
-	@Override
-	protected FileSystem doCreateFileSystem(FileName name, FileSystemOptions fileSystemOptions) throws FileSystemException {
-		final GenericFileName rootName = (GenericFileName)name;
-		DbxClientWrapper client = DbxClientWrapper.getClientWrapper(rootName, fileSystemOptions);
-		DbxClientWrapper.releaseClientWrapper(client);
-		return new DbxFileSystem(rootName, fileSystemOptions);
-	}
-	
-	@Override
-	public Collection getCapabilities() {
-		return CAPABILITIES;
+	public static FileNameParser getInstance() {
+		return INSTANCE;
 	}
 }

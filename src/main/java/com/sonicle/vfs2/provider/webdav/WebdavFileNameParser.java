@@ -1,50 +1,53 @@
+/*
+ * Copyright (C) 2014 Sonicle S.r.l.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License version 3 as published by
+ * the Free Software Foundation with the addition of the following permission
+ * added to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED
+ * WORK IN WHICH THE COPYRIGHT IS OWNED BY SONICLE, SONICLE DISCLAIMS THE
+ * WARRANTY OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program; if not, see http://www.gnu.org/licenses or write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301 USA.
+ *
+ * You can contact Sonicle S.r.l. at email address sonicle[at]sonicle.com
+ *
+ * The interactive user interfaces in modified source and object code versions
+ * of this program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU Affero General Public License version 3.
+ *
+ * In accordance with Section 7(b) of the GNU Affero General Public License
+ * version 3, these Appropriate Legal Notices must retain the display of the
+ * Sonicle logo and Sonicle copyright notice. If the display of the logo is not
+ * reasonably feasible for technical reasons, the Appropriate Legal Notices must
+ * display the words "Copyright (C) 2014 Sonicle S.r.l.".
+ */
 package com.sonicle.vfs2.provider.webdav;
 
-import org.apache.commons.vfs2.FileName;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.provider.FileNameParser;
-import org.apache.commons.vfs2.provider.UriParser;
-import org.apache.commons.vfs2.provider.VfsComponentContext;
 import org.apache.commons.vfs2.provider.http.HttpFileNameParser;
 
-
 /**
- * Borrowed from standard implem (there seems to be some mess with default port
- * 80 ...)
- * 
- * @author ndx
- * 
+ * Implementation for http. set default port to 80
+ *
+ * @since 2.0
  */
 public class WebdavFileNameParser extends HttpFileNameParser {
-	private static final WebdavFileNameParser INSTANCE = new WebdavFileNameParser();
+    private static final WebdavFileNameParser INSTANCE = new WebdavFileNameParser();
 
-	public WebdavFileNameParser() {
-		super();
-	}
+    public WebdavFileNameParser() {
+        super();
+    }
 
-	public static FileNameParser getInstance() {
-		return INSTANCE;
-	}
-
-	@Override
-	public FileName parseUri(final VfsComponentContext context, FileName base, final String filename) throws FileSystemException {
-		// FTP URI are generic URI (as per RFC 2396)
-		final StringBuilder name = new StringBuilder();
-
-		// Extract the scheme and authority parts
-		final Authority auth = extractToPath(filename, name);
-
-		// Extract the queryString
-		String queryString = UriParser.extractQueryString(name);
-
-		// Decode and normalise the file name
-		UriParser.canonicalizePath(name, 0, name.length(), this);
-		UriParser.fixSeparators(name);
-		FileType fileType = UriParser.normalisePath(name);
-		final String path = name.toString();
-
-		return new URLFileName(auth.getScheme(), auth.getHostName(), auth.getPort(), getDefaultPort(), auth.getUserName(), auth.getPassword(), path, fileType,
-						queryString);
-	}
+    public static FileNameParser getInstance() {
+        return INSTANCE;
+    }
 }

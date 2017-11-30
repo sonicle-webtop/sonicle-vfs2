@@ -48,8 +48,8 @@ import org.apache.commons.vfs2.provider.GenericFileName;
  */
 public class DbxFileSystem extends AbstractFileSystem implements FileSystem {
 	
-	protected DbxFileSystem(GenericFileName rootName, FileSystemOptions fso) {
-		super(rootName, null, fso);
+	protected DbxFileSystem(GenericFileName rootName, FileSystemOptions fileSystemOptions) {
+		super(rootName, null, fileSystemOptions);
 	}
 	
 	public DbxClientWrapper getClientWrapper() throws IOException {
@@ -67,6 +67,6 @@ public class DbxFileSystem extends AbstractFileSystem implements FileSystem {
 
 	@Override
 	protected void addCapabilities(Collection<Capability> caps) {
-		caps.addAll(DbxFileProvider.capabilities);
+		caps.addAll(DbxFileProvider.CAPABILITIES);
 	}
 }

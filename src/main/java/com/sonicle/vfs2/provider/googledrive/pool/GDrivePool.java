@@ -39,7 +39,6 @@ import java.util.concurrent.TimeUnit;
  * @author malbinola
  */
 public class GDrivePool {
-	
 	private static final GDrivePool INSTANCE = new GDrivePool();
 	
 	public static GDrivePool getInstance() {

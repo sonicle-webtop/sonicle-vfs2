@@ -1,270 +1,123 @@
+/*
+ * Copyright (C) 2014 Sonicle S.r.l.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License version 3 as published by
+ * the Free Software Foundation with the addition of the following permission
+ * added to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED
+ * WORK IN WHICH THE COPYRIGHT IS OWNED BY SONICLE, SONICLE DISCLAIMS THE
+ * WARRANTY OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program; if not, see http://www.gnu.org/licenses or write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301 USA.
+ *
+ * You can contact Sonicle S.r.l. at email address sonicle[at]sonicle.com
+ *
+ * The interactive user interfaces in modified source and object code versions
+ * of this program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU Affero General Public License version 3.
+ *
+ * In accordance with Section 7(b) of the GNU Affero General Public License
+ * version 3, these Appropriate Legal Notices must retain the display of the
+ * Sonicle logo and Sonicle copyright notice. If the display of the logo is not
+ * reasonably feasible for technical reasons, the Appropriate Legal Notices must
+ * display the words "Copyright (C) 2014 Sonicle S.r.l.".
+ */
 package com.sonicle.vfs2.provider.webdav;
 
 import org.apache.commons.vfs2.FileSystem;
 import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.UserAuthenticator;
-import org.apache.commons.vfs2.impl.DefaultFileSystemConfigBuilder;
-import org.apache.commons.vfs2.provider.webdav.WebdavFileSystem;
-import org.apache.http.cookie.Cookie;
+import org.apache.commons.vfs2.provider.http.HttpFileSystemConfigBuilder;
 
-public class WebdavFileSystemConfigBuilder extends DefaultFileSystemConfigBuilder {
-
-    private static final String PREFIX = "webdav.";
-
-	private static final int DEFAULT_MAX_HOST_CONNECTIONS = 5;
-
-    private static final int DEFAULT_MAX_CONNECTIONS = 50;
-
-    private static final String OPTION_NAME_PREEMPTIVE_AUTHENTICATION = "preemptiveAuth";
-
-	private static final String MAX_HOST_CONNECTIONS = "maxHostConnections";
-
-	private static final String MAX_TOTAL_CONNECTIONS = "maxTotalConnections";
+/**
+ * Configuration options for WebDav.
+ *
+ * @since 2.0
+ */
+public final class WebdavFileSystemConfigBuilder extends HttpFileSystemConfigBuilder {
 
 	private static final WebdavFileSystemConfigBuilder BUILDER = new WebdavFileSystemConfigBuilder();
 
-    private WebdavFileSystemConfigBuilder()
-    {
-        super();
-        // TODO set prefix on superclass
-    }
+	private static final boolean DEFAULT_FOLLOW_REDIRECT = false;
 
-    public static WebdavFileSystemConfigBuilder getInstance()
-    {
-        return BUILDER;
-    }
+	private WebdavFileSystemConfigBuilder() {
+		super("webdav.");
+	}
 
-    /**
-     * The user name to be associated with changes to the file.
-     * @param opts The FileSystem options
-     * @param creatorName The creator name to be associated with the file.
-     */
-    public void setCreatorName(FileSystemOptions opts, String creatorName)
-    {
-        setParam(opts, "creatorName", creatorName);
-    }
+	/**
+	 * Gets the singleton builder.
+	 *
+	 * @return the singleton builder.
+	 */
+	public static HttpFileSystemConfigBuilder getInstance() {
+		return BUILDER;
+	}
 
-    /**
-     * Return the user name to be associated with changes to the file.
-     * @param opts The FileSystem options
-     * @return The creatorName.
-     */
-    public String getCreatorName(FileSystemOptions opts)
-    {
-        return getString(opts, "creatorName");
-    }
+	/**
+	 * The user name to be associated with changes to the file.
+	 *
+	 * @param opts The FileSystem options
+	 * @param creatorName The creator name to be associated with the file.
+	 */
+	public void setCreatorName(final FileSystemOptions opts, final String creatorName) {
+		setParam(opts, "creatorName", creatorName);
+	}
 
-    /**
-     * Whether to use versioning.
-     * @param opts The FileSystem options.
-     * @param versioning true if versioning should be enabled.
-     */
-    public void setVersioning(FileSystemOptions opts, boolean versioning)
-    {
-        setParam(opts, "versioning", Boolean.valueOf(versioning));
-    }
+	/**
+	 * Return the user name to be associated with changes to the file.
+	 *
+	 * @param opts The FileSystem options
+	 * @return The creatorName.
+	 */
+	public String getCreatorName(final FileSystemOptions opts) {
+		return getString(opts, "creatorName");
+	}
 
-    /**
-     * The cookies to add to the request.
-     * @param opts The FileSystem options.
-     * @return true if versioning is enabled.
-     */
-    public boolean isVersioning(FileSystemOptions opts)
-    {
-        return getBoolean(opts, "versioning", false);
-    }
+	/**
+	 * Gets whether to follow redirects for the connection.
+	 *
+	 * @param opts The FileSystem options.
+	 * @return {@code true} to follow redirects, {@code false} not to.
+	 * @see #setFollowRedirect
+	 * @since 2.1
+	 */
+	@Override
+	public boolean getFollowRedirect(final FileSystemOptions opts) {
+		return getBoolean(opts, KEY_FOLLOW_REDIRECT, DEFAULT_FOLLOW_REDIRECT);
+	}
 
-    /**
-     * @return The Webdav FileSystem Class object.
-     */
-    @Override
-    protected Class<? extends FileSystem> getConfigClass()
-    {
-        return WebdavFileSystem.class;
-    }
+	/**
+	 * Whether to use versioning.
+	 *
+	 * @param opts The FileSystem options.
+	 * @param versioning true if versioning should be enabled.
+	 */
+	public void setVersioning(final FileSystemOptions opts, final boolean versioning) {
+		setParam(opts, "versioning", Boolean.valueOf(versioning));
+	}
 
+	/**
+	 * The cookies to add to the request.
+	 *
+	 * @param opts The FileSystem options.
+	 * @return true if versioning is enabled.
+	 */
+	public boolean isVersioning(final FileSystemOptions opts) {
+		return getBoolean(opts, "versioning", false);
+	}
 
-    /**
-     * Set the charset used for url encoding.<br>
-     *
-     * @param opts The FileSystem options.
-     * @param chaset the chaset
-     */
-    public void setUrlCharset(FileSystemOptions opts, String chaset)
-    {
-        setParam(opts, "urlCharset", chaset);
-    }
-
-    /**
-     * Set the charset used for url encoding.<br>
-     *
-     * @param opts The FileSystem options.
-     * @return the chaset
-     */
-    public String getUrlCharset(FileSystemOptions opts)
-    {
-        return getString(opts, "urlCharset");
-    }
-
-    /**
-     * Set the proxy to use for http connection.<br>
-     * You have to set the ProxyPort too if you would like to have the proxy really used.
-     *
-     * @param opts The FileSystem options.
-     * @param proxyHost the host
-     * @see #setProxyPort
-     */
-    public void setProxyHost(FileSystemOptions opts, String proxyHost)
-    {
-        setParam(opts, "proxyHost", proxyHost);
-    }
-
-    /**
-     * Set the proxy-port to use for http connection.
-     * You have to set the ProxyHost too if you would like to have the proxy really used.
-     *
-     * @param opts The FileSystem options.
-     * @param proxyPort the port
-     * @see #setProxyHost
-     */
-    public void setProxyPort(FileSystemOptions opts, int proxyPort)
-    {
-        setParam(opts, "proxyPort", new Integer(proxyPort));
-    }
-
-    /**
-     * Get the proxy to use for http connection.
-     * You have to set the ProxyPort too if you would like to have the proxy really used.
-     *
-     * @param opts The FileSystem options.
-     * @return proxyHost
-     * @see #setProxyPort
-     */
-    public String getProxyHost(FileSystemOptions opts)
-    {
-        return getString(opts, "proxyHost");
-    }
-
-    /**
-     * Get the proxy-port to use for http the connection.
-     * You have to set the ProxyHost too if you would like to have the proxy really used.
-     *
-     * @param opts The FileSystem options.
-     * @return proxyPort: the port number or 0 if it is not set
-     * @see #setProxyHost
-     */
-    public int getProxyPort(FileSystemOptions opts)
-    {
-        return getInteger(opts, "proxyPort", 0);
-    }
-
-    /**
-     * Set the proxy authenticator where the system should get the credentials from.
-     * @param opts The FileSystem options.
-     * @param authenticator The UserAuthenticator.
-     */
-    public void setProxyAuthenticator(FileSystemOptions opts, UserAuthenticator authenticator)
-    {
-        setParam(opts, "proxyAuthenticator", authenticator);
-    }
-
-    /**
-     * Get the proxy authenticator where the system should get the credentials from.
-     * @param opts The FileSystem options.
-     * @return The UserAuthenticator.
-     */
-    public UserAuthenticator getProxyAuthenticator(FileSystemOptions opts)
-    {
-        return (UserAuthenticator) getParam(opts, "proxyAuthenticator");
-    }
-
-    /**
-     * The cookies to add to the request.
-     * @param opts The FileSystem options.
-     * @param cookies An array of Cookies.
-     */
-    public void setCookies(FileSystemOptions opts, Cookie[] cookies)
-    {
-        setParam(opts, "cookies", cookies);
-    }
-
-    /**
-     * The cookies to add to the request.
-     * @param opts The FileSystem options.
-     * @return the Cookie array.
-     */
-    public Cookie[] getCookies(FileSystemOptions opts)
-    {
-        return (Cookie[]) getParam(opts, "cookies");
-    }
-
-    /**
-     * The maximum number of connections allowed.
-     * @param opts The FileSystem options.
-     * @param maxTotalConnections The maximum number of connections.
-     * @since 2.0
-     */
-    public void setMaxTotalConnections(FileSystemOptions opts, int maxTotalConnections)
-    {
-        setParam(opts, MAX_TOTAL_CONNECTIONS, new Integer(maxTotalConnections));
-    }
-
-    /**
-     * Retrieve the maximum number of connections allowed.
-     * @param opts The FileSystemOptions.
-     * @return The maximum number of connections allowed.
-     * @since 2.0
-     */
-    public int getMaxTotalConnections(FileSystemOptions opts)
-    {
-        return getInteger(opts, MAX_TOTAL_CONNECTIONS, DEFAULT_MAX_CONNECTIONS);
-    }
-
-    /**
-     * The maximum number of connections allowed to any host.
-     * @param opts The FileSystem options.
-     * @param maxHostConnections The maximum number of connections to a host.
-     * @since 2.0
-     */
-    public void setMaxConnectionsPerHost(FileSystemOptions opts, int maxHostConnections)
-    {
-        setParam(opts, MAX_HOST_CONNECTIONS, new Integer(maxHostConnections));
-    }
-
-    /**
-     * Retrieve the maximum number of connections allowed per host.
-     * @param opts The FileSystemOptions.
-     * @return The maximum number of connections allowed per host.
-     * @since 2.0
-     */
-    public int getMaxConnectionsPerHost(FileSystemOptions opts)
-    {
-        return getInteger(opts, MAX_HOST_CONNECTIONS, DEFAULT_MAX_HOST_CONNECTIONS);
-    }
-
-    /**
-     * Determines if the FileSystemOptions indicate that preemptive
-     * authentication is requested.
-     * @param opts The FileSystemOptions.
-     * @return true if preemptiveAuth is requested.
-     * @since 2.0
-     */
-    public boolean isPreemptiveAuth(FileSystemOptions opts)
-    {
-        return getBoolean(opts, OPTION_NAME_PREEMPTIVE_AUTHENTICATION, Boolean.FALSE).booleanValue();
-    }
-
-    /**
-     * Sets the given value for preemptive HTTP authentication (using BASIC) on the
-     * given FileSystemOptions object.  Defaults to false if not set.  It may be
-     * appropriate to set to true in cases when the resulting chattiness of the
-     * conversation outweighs any architectural desire to use a stronger authentication
-     * scheme than basic/preemptive.
-     * @param opts The FileSystemOptions.
-     * @param preemptiveAuth the desired setting; true=enabled and false=disabled.
-     */
-    public void setPreemptiveAuth(FileSystemOptions opts, boolean preemptiveAuth)
-    {
-        setParam(opts, OPTION_NAME_PREEMPTIVE_AUTHENTICATION, Boolean.valueOf(preemptiveAuth));
-    }
+	/**
+	 * @return The Webdav FileSystem Class object.
+	 */
+	@Override
+	protected Class<? extends FileSystem> getConfigClass() {
+		return WebdavFileSystem.class;
+	}
 }
