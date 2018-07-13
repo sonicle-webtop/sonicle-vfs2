@@ -36,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -594,14 +595,25 @@ public class WebdavFileObject extends HttpFileObject<WebdavFileSystem> {
 	DavPropertySet getPropertyNames(final URLFileName name) throws FileSystemException {
 		return getProperties(name, DavConstants.PROPFIND_PROPERTY_NAMES, new DavPropertyNameSet(), false);
 	}
-
+	
+	private boolean isCurrentFile(final String href, final URLFileName currentFileName) throws FileSystemException, UnsupportedEncodingException {
+		String currentDec = urlDecode(toEncodedURLString(currentFileName), this.getUrlCharset());
+		String currentPathDec = currentFileName.getPathDecoded();
+		String hrefDec = urlDecode(href, this.getUrlCharset());
+		if (hrefDec.endsWith("/") && !currentDec.endsWith("/")) {
+			currentDec += "/";
+			currentPathDec += "/";
+		}
+		return hrefDec.equals(currentDec) || hrefDec.equals(currentPathDec);
+	}
+	
 	/**
 	 * Convert the FileName to an encoded url String.
 	 *
 	 * @param name The FileName.
 	 * @return The encoded URL String.
 	 */
-	private String hrefString(final URLFileName name) {
+	private String toEncodedURLString(final URLFileName name) {
 		final URLFileName newFile = new URLFileName(WebdavFileProvider.getURLScheme(name),
 				name.getHostName(), name.getPort(), name.getDefaultPort(),
 				null, null, name.getPath(), name.getType(), name.getQueryString());
@@ -612,15 +624,9 @@ public class WebdavFileObject extends HttpFileObject<WebdavFileSystem> {
 			return name.getURI();
 		}
 	}
-
-	private boolean isCurrentFile(final String href, final URLFileName fileName) {
-		String name = hrefString(fileName);
-		String path = fileName.getPath();
-		if (href.endsWith("/") && !name.endsWith("/")) {
-			name += "/";
-			path += "/";
-		}
-		return href.equals(name) || href.equals(path);
+	
+	private String urlDecode(String s, String charset) throws UnsupportedEncodingException {
+		return java.net.URLDecoder.decode(s, (charset == null) ? "UTF-8" : charset);
 	}
 
 	/*
