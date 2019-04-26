@@ -439,10 +439,8 @@ public class WebdavFileObject extends HttpFileObject<WebdavFileSystem> {
 					final MultiStatusResponse[] responses = method.getResponseBodyAsMultiStatus().getResponses();
 
 					for (final MultiStatusResponse response : responses) {
-						if (isCurrentFile(response.getHref(), name)) {
-							continue;
-						}
-						final String resourceName = resourceName(response.getHref());
+						if (isCurrentFile(response.getHref(), name)) continue;
+						final String resourceName = resourceName(urlDecode(response.getHref(), null));
 						if (resourceName != null && resourceName.length() > 0) {
 							PropMap map = new PropMap();
 							DavPropertySet properties = response.getProperties(HttpStatus.SC_OK);
