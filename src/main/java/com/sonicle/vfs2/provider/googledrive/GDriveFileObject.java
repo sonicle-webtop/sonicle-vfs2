@@ -294,7 +294,7 @@ public class GDriveFileObject extends AbstractFileObject {
 			array = new FileObject[list.size()];
 			for(int i = 0; i < list.size(); i++) {
 				File child = (File)list.get(i);
-				array[i] = fileSystem.resolveFile(fsmanager.resolveName(getName(), UriParser.encode(child.getTitle()), NameScope.CHILD));
+				array[i] = fileSystem.resolveFile(fsmanager.resolveName(getName(), UriParser.encode(child.getTitle()).replace(":", "%3A"), NameScope.CHILD));
 				((GDriveFileObject)array[i]).gdriveFile = child;
 			}
 			
