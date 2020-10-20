@@ -32,6 +32,7 @@
  */
 package com.sonicle.vfs2.provider.webdav;
 
+import com.sonicle.vfs2.VfsURI;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -595,6 +596,7 @@ public class WebdavFileObject extends HttpFileObject<WebdavFileSystem> {
 	}
 	
 	private boolean isCurrentFile(final String href, final URLFileName currentFileName) throws FileSystemException, UnsupportedEncodingException {
+		/*
 		String currentDec = urlDecode(toEncodedURLString(currentFileName), this.getUrlCharset());
 		String currentPathDec = currentFileName.getPathDecoded();
 		String hrefDec = urlDecode(href, this.getUrlCharset());
@@ -603,6 +605,13 @@ public class WebdavFileObject extends HttpFileObject<WebdavFileSystem> {
 			currentPathDec += "/";
 		}
 		return hrefDec.equals(currentDec) || hrefDec.equals(currentPathDec);
+		*/
+		String currentPathDec = currentFileName.getPathDecoded();
+		String hrefDec = urlDecode(href, this.getUrlCharset());
+		if (hrefDec.endsWith("/") && !currentPathDec.endsWith("/")) {
+			currentPathDec += "/";
+		}
+		return hrefDec.equals(currentPathDec);
 	}
 	
 	/**
@@ -711,11 +720,18 @@ public class WebdavFileObject extends HttpFileObject<WebdavFileSystem> {
 			user = name.getUserName();
 			password = name.getPassword();
 		}
-		final URLFileName newFile = new URLFileName(WebdavFileProvider.getURLScheme(name),
-				name.getHostName(), name.getPort(), name.getDefaultPort(),
-				user, password, name.getPath(), name.getType(), name.getQueryString());
+		
 		try {
-			return newFile.getURIEncoded(this.getUrlCharset());
+			return new VfsURI.Builder()
+				.scheme(WebdavFileProvider.getURLScheme(name))
+				.host(name.getHostName())
+				.port(name.getPort())
+				.username(user)
+				.password(password)
+				.path(name.getPathDecoded())
+				.queryString(name.getQueryString())
+				.build().toASCIIString();
+			
 		} catch (final Exception e) {
 			return name.getURI();
 		}

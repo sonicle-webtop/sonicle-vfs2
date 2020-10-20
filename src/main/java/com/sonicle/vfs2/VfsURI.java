@@ -54,12 +54,13 @@ public class VfsURI {
 	}
 	
 	public static class Builder<T extends Builder> {
-		private String scheme = null;
-		private String host = null;
-		private Integer port = null;
-		private String username = null;
-		private String password = null;
-		private String path = null;
+		protected String scheme = null;
+		protected String host = null;
+		protected Integer port = null;
+		protected String username = null;
+		protected String password = null;
+		protected String path = null;
+		protected String queryString = null;
 		
 		public Builder() {}
 
@@ -93,23 +94,28 @@ public class VfsURI {
 			return (T)this;
 		}
 		
+		public T queryString(String queryString) {
+			this.queryString = queryString;
+			return (T)this;
+		}
+		
 		public URI build() throws URISyntaxException {
 			String shost = StringUtils.defaultIfBlank(this.host, null);
 			String spath = PathUtils.ensureTrailingSeparator(this.path, true);
 			
 			if (shost == null) {
-				return new URI(this.scheme, "", spath, null, null);
+				return new URI(this.scheme, null, spath, this.queryString, null);
 			} else {
 				int iport = (this.port == null) ? -1 : this.port;
-				String suserInfo = "";
+				String suserInfo = null;
 				if (!StringUtils.isBlank(username)) {
-					suserInfo += username;
+					suserInfo = username;
 					if (!StringUtils.isBlank(password)) {
 						suserInfo += ":";
 						suserInfo += password;
 					}
 				}
-				return new URI(this.scheme, suserInfo, shost, iport, spath, null, null);
+				return new URI(this.scheme, suserInfo, shost, iport, spath, this.queryString, null);
 			}
 		}
 	}
