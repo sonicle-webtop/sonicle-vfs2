@@ -62,6 +62,7 @@ import org.apache.commons.vfs2.NameScope;
 import org.apache.commons.vfs2.provider.AbstractFileName;
 import org.apache.commons.vfs2.provider.DefaultFileContent;
 import org.apache.commons.vfs2.provider.URLFileName;
+import org.apache.commons.vfs2.provider.UriParser;
 import org.apache.commons.vfs2.provider.http.HttpFileObject;
 import org.apache.commons.vfs2.util.FileObjectUtils;
 import org.apache.commons.vfs2.util.MonitorOutputStream;
@@ -441,7 +442,7 @@ public class WebdavFileObject extends HttpFileObject<WebdavFileSystem> {
 
 					for (final MultiStatusResponse response : responses) {
 						if (isCurrentFile(response.getHref(), name)) continue;
-						final String resourceName = resourceName(urlDecode(response.getHref(), null));
+						final String resourceName = resourceName(UriParser.encode(urlDecode(response.getHref(), null)));
 						if (resourceName != null && resourceName.length() > 0) {
 							PropMap map = new PropMap();
 							DavPropertySet properties = response.getProperties(HttpStatus.SC_OK);
