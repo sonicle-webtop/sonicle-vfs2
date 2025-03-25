@@ -20,7 +20,7 @@
 		
 		<!-- DEP: widely used libs -->
 		<commons-lang3.version>3.12.0</commons-lang3.version>
-		<commons-vfs2.version>2.2</commons-vfs2.version>
+		<commons-vfs2.version>2.10.0</commons-vfs2.version>
 		<commons-vfs2-sandbox.version>2.0</commons-vfs2-sandbox.version>
 		<sardine.version>5.8</sardine.version>
 		<slf4j.version>1.7.36</slf4j.version>
