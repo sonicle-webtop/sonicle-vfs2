@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.commons.vfs2.provider.smb;
+package com.sonicle.vfs2.provider.smb;
 
 import java.util.Collection;
 
@@ -26,6 +26,7 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.provider.AbstractFileName;
 import org.apache.commons.vfs2.provider.AbstractFileSystem;
+import jcifs.CIFSContext;
 
 /**
  * An SMB file system.
@@ -36,9 +37,20 @@ public class SmbFileSystem
     extends AbstractFileSystem
     implements FileSystem
 {
-    protected SmbFileSystem(final FileName rootName, final FileSystemOptions fileSystemOptions)
+    private final CIFSContext context;
+
+    protected SmbFileSystem(final FileName rootName, final FileSystemOptions fileSystemOptions, final CIFSContext context)
     {
         super(rootName, null, fileSystemOptions);
+        this.context = context;
+    }
+
+    /**
+     * Returns the jcifs context (without credentials) of the provider.
+     */
+    CIFSContext getCifsContext()
+    {
+        return context;
     }
 
     /**

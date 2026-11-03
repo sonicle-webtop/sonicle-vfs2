@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.commons.vfs2.provider.smb;
+package com.sonicle.vfs2.provider.smb;
 
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileSystemException;
@@ -25,7 +25,7 @@ import org.apache.commons.vfs2.provider.UriParser;
 import org.apache.commons.vfs2.provider.VfsComponentContext;
 
 /**
- * Implementation for sftp. set default port to 139
+ * File name parser for smb: default port is 445.
  */
 public class SmbFileNameParser extends URLFileNameParser
 {
@@ -33,7 +33,7 @@ public class SmbFileNameParser extends URLFileNameParser
 
     public SmbFileNameParser()
     {
-        super(139);
+        super(SmbFileName.DEFAULT_PORT);
     }
 
     public static FileNameParser getInstance()

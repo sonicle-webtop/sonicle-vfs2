@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.commons.vfs2.provider.smb;
+package com.sonicle.vfs2.provider.smb;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import jcifs.CIFSContext;
 import jcifs.smb.NtStatus;
 
-import jcifs.smb.NtlmPasswordAuthentication;
+import jcifs.smb.NtlmPasswordAuthenticator;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
@@ -86,27 +87,38 @@ public class SmbFileObject
 
         UserAuthenticationData authData = null;
         SmbFile file;
-        NtlmPasswordAuthentication auth;
+        CIFSContext auth;
         try
         {
             authData = UserAuthenticatorUtils.authenticate(getFileSystem().getFileSystemOptions(), SmbFileProvider.AUTHENTICATOR_TYPES);
 
-            auth = new NtlmPasswordAuthentication(
-                UserAuthenticatorUtils.toString(
-                    UserAuthenticatorUtils.getData(
-                        authData,
-                        UserAuthenticationData.DOMAIN,
-                        UserAuthenticatorUtils.toChar(smbFileName.getDomain()))),
-                UserAuthenticatorUtils.toString(
-                    UserAuthenticatorUtils.getData(
-                        authData,
-                        UserAuthenticationData.USERNAME,
-                        UserAuthenticatorUtils.toChar(smbFileName.getUserName()))),
-                UserAuthenticatorUtils.toString(
-                    UserAuthenticatorUtils.getData(
-                        authData,
-                        UserAuthenticationData.PASSWORD,
-                        UserAuthenticatorUtils.toChar(smbFileName.getPassword()))));
+            String domain = UserAuthenticatorUtils.toString(
+                UserAuthenticatorUtils.getData(
+                    authData,
+                    UserAuthenticationData.DOMAIN,
+                    UserAuthenticatorUtils.toChar(smbFileName.getDomain())));
+            String username = UserAuthenticatorUtils.toString(
+                UserAuthenticatorUtils.getData(
+                    authData,
+                    UserAuthenticationData.USERNAME,
+                    UserAuthenticatorUtils.toChar(smbFileName.getUserName())));
+            String password = UserAuthenticatorUtils.toString(
+                UserAuthenticatorUtils.getData(
+                    authData,
+                    UserAuthenticationData.PASSWORD,
+                    UserAuthenticatorUtils.toChar(smbFileName.getPassword())));
+
+            // The credentials wrap the shared context: connections stay pooled per server
+            CIFSContext base = ((SmbFileSystem) getFileSystem()).getCifsContext();
+            if (username == null || username.isEmpty())
+            {
+                // Same as jcifs 1.3.17, which defaulted to the GUEST user
+                auth = base.withGuestCrendentials(); // sic: typo in the jcifs 2.x API
+            }
+            else
+            {
+                auth = base.withCredentials(new NtlmPasswordAuthenticator(domain, username, password));
+            }
 
             file = new SmbFile(path, auth);
         }
@@ -212,7 +224,7 @@ public class SmbFileObject
     protected long doGetLastModifiedTime()
         throws Exception
     {
-        return file.getLastModified();
+        return file.lastModified();
     }
 
     /**

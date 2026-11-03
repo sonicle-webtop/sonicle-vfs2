@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.commons.vfs2.provider.smb;
+package com.sonicle.vfs2.provider.smb;
 
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileSystemException;
@@ -28,7 +28,8 @@ import org.apache.commons.vfs2.provider.GenericFileName;
  */
 public class SmbFileName extends GenericFileName
 {
-    private static final int DEFAULT_PORT = 139;
+    // SMB2/3 run over direct TCP (445); 139 is NetBIOS, used by SMB1 only
+    static final int DEFAULT_PORT = 445;
 
     private final String share;
     private final String domain;
@@ -103,7 +104,7 @@ public class SmbFileName extends GenericFileName
     }
 
     /**
-     * Construct the path suitable for SmbFile when used with NtlmPasswordAuthentication
+     * Construct the path suitable for SmbFile when used with a credentials context
      */
     public String getUriWithoutAuth() throws FileSystemException
     {
@@ -112,9 +113,9 @@ public class SmbFileName extends GenericFileName
             return uriWithoutAuth;
         }
 
+        // jcifs only understands the "smb" scheme
         StringBuilder sb = new StringBuilder(120);
-        sb.append(getScheme());
-        sb.append("://");
+        sb.append("smb://");
         sb.append(getHostName());
         if (getPort() != DEFAULT_PORT)
         {

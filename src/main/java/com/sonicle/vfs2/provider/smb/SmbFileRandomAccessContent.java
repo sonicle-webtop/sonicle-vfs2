@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.commons.vfs2.provider.smb;
+package com.sonicle.vfs2.provider.smb;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.UnknownHostException;
 
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -51,7 +49,8 @@ class SmbFileRandomAccessContent extends AbstractRandomAccessContent
                 @Override
                 public int read() throws IOException
                 {
-                    return raf.readByte();
+                    // readByte() is signed and throws at EOF: InputStream wants 0-255 or -1
+                    return raf.read();
                 }
 
                 @Override
@@ -93,15 +92,7 @@ class SmbFileRandomAccessContent extends AbstractRandomAccessContent
 				
             };
         }
-        catch (MalformedURLException e)
-        {
-            throw new FileSystemException("vfs.provider/random-access-open-failed.error", smbFile, e);
-        }
         catch (SmbException e)
-        {
-            throw new FileSystemException("vfs.provider/random-access-open-failed.error", smbFile, e);
-        }
-        catch (UnknownHostException e)
         {
             throw new FileSystemException("vfs.provider/random-access-open-failed.error", smbFile, e);
         }
