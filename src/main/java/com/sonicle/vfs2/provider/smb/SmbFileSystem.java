@@ -38,13 +38,23 @@ public class SmbFileSystem
     implements FileSystem
 {
     private final CIFSContext context;
+	private final SmbFileSystemConfigBuilder.NamePolicy namePolicy;
 
     protected SmbFileSystem(final FileName rootName, final FileSystemOptions fileSystemOptions, final CIFSContext context)
     {
         super(rootName, null, fileSystemOptions);
         this.context = context;
+		this.namePolicy = SmbFileSystemConfigBuilder.getInstance().getNamePolicy(fileSystemOptions);
     }
-
+	
+	/**
+     * Returns how names breaking the Windows rules are handled.
+     */
+    SmbFileSystemConfigBuilder.NamePolicy getNamePolicy()
+    {
+        return namePolicy;
+    }
+	
     /**
      * Returns the jcifs context (without credentials) of the provider.
      */

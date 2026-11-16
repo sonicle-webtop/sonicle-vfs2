@@ -16,6 +16,8 @@
  */
 package com.sonicle.vfs2.provider.smb;
 
+import com.sonicle.vfs2.InvalidFileNameException;
+import com.sonicle.vfs2.util.WindowsFileNames;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -51,6 +53,9 @@ public class SmbFileObject
 {
     // private final String fileName;
     private SmbFile file;
+	// jcifs URL this object points to: the raw name, unless the name policy
+    // maps it to its Windows form (see resolveUri)
+    private String resolvedUri;
 
     protected SmbFileObject(final AbstractFileName name,
                             final SmbFileSystem fileSystem) throws FileSystemException
@@ -77,17 +82,17 @@ public class SmbFileObject
     {
         // file closed through content-streams
         file = null;
+		resolvedUri = null;
     }
-
-    private SmbFile createSmbFile(FileName fileName) throws MalformedURLException, SmbException, FileSystemException
+	
+	private SmbFileSystemConfigBuilder.NamePolicy getNamePolicy()
     {
-        SmbFileName smbFileName = (SmbFileName) fileName;
-
-        String path = smbFileName.getUriWithoutAuth();
-
+        return ((SmbFileSystem) getFileSystem()).getNamePolicy();
+    }
+	
+    private CIFSContext createAuthContext(SmbFileName smbFileName) throws FileSystemException
+    {
         UserAuthenticationData authData = null;
-        SmbFile file;
-        CIFSContext auth;
         try
         {
             authData = UserAuthenticatorUtils.authenticate(getFileSystem().getFileSystemOptions(), SmbFileProvider.AUTHENTICATOR_TYPES);
@@ -113,26 +118,194 @@ public class SmbFileObject
             if (username == null || username.isEmpty())
             {
                 // Same as jcifs 1.3.17, which defaulted to the GUEST user
-                auth = base.withGuestCrendentials(); // sic: typo in the jcifs 2.x API
+                return base.withGuestCrendentials(); // sic: typo in the jcifs 2.x API
             }
             else
             {
-                auth = base.withCredentials(new NtlmPasswordAuthenticator(domain, username, password));
+                return base.withCredentials(new NtlmPasswordAuthenticator(domain, username, password));
             }
-
-            file = new SmbFile(path, auth);
         }
         finally
         {
             UserAuthenticatorUtils.cleanup(authData);
         }
-
+    }
+	
+	private SmbFile createSmbFile(FileName fileName) throws MalformedURLException, SmbException, FileSystemException
+    {
+        SmbFileName smbFileName = (SmbFileName) fileName;
+        CIFSContext auth = createAuthContext(smbFileName);
+        String path = (fileName == getName()) ? getResolvedUri() : smbFileName.getUriWithoutAuth();
+        return newSmbFile(path, auth);
+    }
+	
+	private static SmbFile newSmbFile(String path, CIFSContext auth) throws MalformedURLException, SmbException
+    {
+        SmbFile file = new SmbFile(path, auth);
         if (file.isDirectory() && !file.toString().endsWith("/"))
         {
             file = new SmbFile(path + "/", auth);
         }
-
         return file;
+    }
+	
+	/**
+     * Returns the jcifs URL (without credentials) of this file: see {@link #resolveUri}.
+     */
+    String getResolvedUri() throws FileSystemException
+    {
+        synchronized (getFileSystem())
+        {
+            if (resolvedUri == null)
+            {
+                resolvedUri = resolveUri(false);
+            }
+            return resolvedUri;
+        }
+    }
+
+    /**
+     * Maps the name of this file to the jcifs URL it stands for.
+     * <p>
+     * With {@link SmbFileSystemConfigBuilder.NamePolicy#SANITIZE}, a path
+     * component ending with dots or spaces stands for its Windows form
+     * ("D.I." for "D.I"), unless a file with the raw name already exists: such
+     * files, created by other clients, stay reachable (and deletable) here.
+     * When the component is being created, or is the target of a rename
+     * (<code>creating</code>), the Windows form is always used.
+     * <p>
+     * Each component is mapped by its own file object, so a child of a mapped
+     * folder lands inside the mapped folder.
+     */
+    private String resolveUri(boolean creating) throws FileSystemException
+    {
+        final SmbFileName name = (SmbFileName) getName();
+        final String rawUri = name.getUriWithoutAuth();
+        if (getNamePolicy() != SmbFileSystemConfigBuilder.NamePolicy.SANITIZE)
+        {
+            return rawUri;
+        }
+        if (!WindowsFileNames.hasComponentWithTrailingDotOrSpace(name.getPathDecoded()))
+        {
+            // Nothing to map, anywhere in the path: no server round trip
+            return rawUri;
+        }
+
+        final String leaf = getDecodedBaseName();
+        final String strippedLeaf = WindowsFileNames.stripTrailingDotsAndSpaces(leaf);
+        final String parentUri = getParentUri();
+        if (strippedLeaf.equals(leaf) || strippedLeaf.isEmpty())
+        {
+            // Only some ancestor is mapped. An empty Windows form ("...") would
+            // point to the parent itself, so it is never used: creating it fails.
+            return parentUri + leaf;
+        }
+        if (!creating)
+        {
+            final String rawLeafUri = parentUri + leaf;
+            try
+            {
+                if (new SmbFile(rawLeafUri, createAuthContext(name)).exists())
+                {
+                    return rawLeafUri;
+                }
+            }
+            catch (MalformedURLException | SmbException e)
+            {
+                throw new FileSystemException("vfs.provider/get-type.error", getName(), e);
+            }
+        }
+        return parentUri + strippedLeaf;
+    }
+	
+	private String getParentUri() throws FileSystemException
+    {
+        final FileObject parent = getParent();
+        final String uri;
+        if (parent instanceof SmbFileObject)
+        {
+            uri = ((SmbFileObject) parent).getResolvedUri();
+        }
+        else
+        {
+            // Decorated file objects: the ancestors are taken as they are
+            uri = ((SmbFileName) getName().getParent()).getUriWithoutAuth();
+        }
+        return uri.endsWith("/") ? uri : uri + "/";
+    }
+
+    private String getDecodedBaseName() throws FileSystemException
+    {
+        final String path = ((SmbFileName) getName()).getPathDecoded();
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+	
+	/**
+     * Checks the name of this file before creating it (folder, new file,
+     * rename target), according to the name policy. Only the last component
+     * is checked: the missing ancestors are checked when VFS creates them,
+     * the existing ones are used as they are.
+     */
+    private void checkNameForCreation() throws FileSystemException
+    {
+        final SmbFileSystemConfigBuilder.NamePolicy policy = getNamePolicy();
+        if (policy == SmbFileSystemConfigBuilder.NamePolicy.NONE)
+        {
+            return;
+        }
+        final String leaf = getDecodedBaseName();
+        final WindowsFileNames.Problem problem = WindowsFileNames.check(
+            policy == SmbFileSystemConfigBuilder.NamePolicy.SANITIZE ? WindowsFileNames.stripTrailingDotsAndSpaces(leaf) : leaf);
+        if (problem != null)
+        {
+            throw new InvalidFileNameException(getName(), leaf, problem);
+        }
+    }
+	
+	/**
+     * Checks the name before creating this file and, with
+     * {@link SmbFileSystemConfigBuilder.NamePolicy#SANITIZE}, points it to its
+     * Windows form: it may still point to a raw name that existed when the
+     * object was attached and has been deleted since.
+     */
+    private void prepareForCreation() throws Exception
+    {
+        checkNameForCreation();
+        if (getNamePolicy() == SmbFileSystemConfigBuilder.NamePolicy.SANITIZE
+            && WindowsFileNames.hasTrailingDotOrSpace(getDecodedBaseName()))
+        {
+            synchronized (getFileSystem())
+            {
+                final String uri = resolveUri(true);
+                if (!uri.equals(resolvedUri))
+                {
+                    resolvedUri = uri;
+                    file = newSmbFile(uri, createAuthContext((SmbFileName) getName()));
+                }
+            }
+        }
+    }
+	
+	/**
+     * Same as {@link #prepareForCreation()}, for operations that may also
+     * work on an existing file (writing, random access): an existing file
+     * keeps working whatever its name, the check only applies if it is missing.
+     */
+    private void prepareIfMissing() throws Exception
+    {
+        if (getNamePolicy() == SmbFileSystemConfigBuilder.NamePolicy.NONE)
+        {
+            return;
+        }
+        if (WindowsFileNames.isValid(getDecodedBaseName()))
+        {
+            // No server round trip for valid names
+            return;
+        }
+        if (!file.exists())
+        {
+            prepareForCreation();
+        }
     }
 
     /**
@@ -195,7 +368,28 @@ public class SmbFileObject
     @Override
     protected void doRename(FileObject newfile) throws Exception
     {
-        file.renameTo(createSmbFile(newfile.getName()));
+		if (newfile instanceof SmbFileObject)
+        {
+            final SmbFileObject dest = (SmbFileObject) newfile;
+            dest.checkNameForCreation();
+            synchronized (getFileSystem())
+            {
+                // The target is always created with its Windows form, even
+                // when the raw name existed (VFS deletes it before renaming)
+                final String targetUri = dest.resolveUri(true);
+                final SmbFile target = newSmbFile(targetUri, createAuthContext((SmbFileName) dest.getName()));
+                file.renameTo(target);
+                dest.resolvedUri = targetUri;
+                if (dest.file != null)
+                {
+                    dest.file = target;
+                }
+            }
+        }
+        else
+        {
+            file.renameTo(createSmbFile(newfile.getName()));
+        }
     }
 
     /**
@@ -204,6 +398,7 @@ public class SmbFileObject
     @Override
     protected void doCreateFolder() throws Exception
     {
+		prepareForCreation();
         file.mkdir();
         file = createSmbFile(getName());
     }
@@ -259,6 +454,7 @@ public class SmbFileObject
     @Override
     protected OutputStream doGetOutputStream(boolean bAppend) throws Exception
     {
+		prepareIfMissing();
         return new SmbFileOutputStream(file, bAppend);
     }
 
@@ -268,6 +464,10 @@ public class SmbFileObject
     @Override
     protected RandomAccessContent doGetRandomAccessContent(final RandomAccessMode mode) throws Exception
     {
+		if (mode.requestWrite())
+        {
+            prepareIfMissing();
+        }
         return new SmbFileRandomAccessContent(file, mode);
     }
 }
